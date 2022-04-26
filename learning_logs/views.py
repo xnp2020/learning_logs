@@ -97,3 +97,23 @@ def edit_entry(request, entry_id):
 
     context = {'entry': entry, 'topic': topic, 'form': form}
     return render(request, 'learning_logs/edit_entry.html', context)
+
+@login_required
+def edit_topic(request, topic_id):
+    """编辑既有主题"""
+    topic = get_object_or_404(Topic, id=topic_id)
+    # 确认请求的主题属于当前用户
+    check_topic_owner(request,topic)
+
+    if request.method != 'POST':
+        # 初次请求： 使用当前条目的填充表单
+        form = TopicForm(instance=topic)
+    else:
+        # POST提交的数据： 对数据进行处理
+        form = TopicForm(instance=topic, data=request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('learning_logs:topics')
+
+    context = {'topic': topic, 'form': form}
+    return render(request, 'learning_logs/edit_topic.html', context)    
